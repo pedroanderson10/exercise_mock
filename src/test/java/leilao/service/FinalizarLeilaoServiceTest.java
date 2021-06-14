@@ -58,7 +58,7 @@ public class FinalizarLeilaoServiceTest {
 
     @Test
     @DisplayName("Enviar email para o vencedor do leilão")
-    void enviarEmailParaVencedorDoLeilao(){
+    void enviarEmailParaVencedor(){
         List<Leilao> listLeiloes = leiloes();
 
         //Manipular o mockito para receber a lista criada, após o método especificado ser chamado
@@ -71,6 +71,29 @@ public class FinalizarLeilaoServiceTest {
 
         //Verificar se um determinado método de um mock foi executado
         Mockito.verify(enviadorDeEmails).enviarEmailVencedorLeilao(lanceVencedor);
+
+    }
+
+    @Test
+    @DisplayName("Não enviar email para o vencedor do leilão caso o mesmo não seja encerrado")
+    void naoEnviarEmailParaVencedor(){
+        List<Leilao> listLeiloes = leiloes();
+
+        //Manipular o mockito para receber a lista criada, após o método especificado ser chamado
+        Mockito.when(leilaoDao.buscarLeiloesExpirados())
+                .thenReturn(listLeiloes);
+
+        //Manipular para receber uma exception (para não alterar classe de produção)
+        Mockito.when(leilaoDao.salvar(Mockito.any()))
+                .thenThrow(RuntimeException.class);
+
+        try {
+            finalizarLeilaoService.finalizarLeiloesExpirados();
+            //Verificar se um determinado método de um mock NÃO foi executado
+            Mockito.verifyNoInteractions(enviadorDeEmails);
+        }catch (Exception e){
+
+        }
 
     }
 
