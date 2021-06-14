@@ -7,6 +7,7 @@ import br.com.leilao.dao.LeilaoDao;
 import br.com.leilao.model.Lance;
 import br.com.leilao.model.Leilao;
 import br.com.leilao.model.Usuario;
+import br.com.leilao.service.EnviadorDeEmails;
 import br.com.leilao.service.FinalizarLeilaoService;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,10 +28,13 @@ public class FinalizarLeilaoServiceTest {
     @Mock //Mockito agora sabe que deve criar um mock dessa clase, porém isso não é feito automaticamente
     private LeilaoDao leilaoDao;
 
+    @Mock
+    private EnviadorDeEmails enviadorDeEmails;
+
     @BeforeEach //Indicar ao mockito, para antes de cada método de teste, ler todos atributos da classe de teste (com @Mock)
     public void beforeEach(){
         MockitoAnnotations.initMocks(this); //Ler anotações do mockito
-        this.finalizarLeilaoService = new FinalizarLeilaoService(leilaoDao);
+        this.finalizarLeilaoService = new FinalizarLeilaoService(leilaoDao, enviadorDeEmails);
     }
 
     @Test
@@ -49,6 +53,24 @@ public class FinalizarLeilaoServiceTest {
 
         //Verificar se um determinado método de um mock foi executado
         Mockito.verify(leilaoDao).salvar(leilao);
+
+    }
+
+    @Test
+    @DisplayName("Enviar email para o vencedor do leilão")
+    void enviarEmailParaVencedorDoLeilao(){
+        List<Leilao> listLeiloes = leiloes();
+
+        //Manipular o mockito para receber a lista criada, após o método especificado ser chamado
+        Mockito.when(leilaoDao.buscarLeiloesExpirados()).thenReturn(listLeiloes);
+
+        finalizarLeilaoService.finalizarLeiloesExpirados();
+
+        Leilao leilao = listLeiloes.get(0);
+        Lance lanceVencedor = leilao.getLanceVencedor();
+
+        //Verificar se um determinado método de um mock foi executado
+        Mockito.verify(enviadorDeEmails).enviarEmailVencedorLeilao(lanceVencedor);
 
     }
 
