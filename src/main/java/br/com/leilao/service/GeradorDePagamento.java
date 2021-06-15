@@ -11,8 +11,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class GeradorDePagamento {
 
-	@Autowired
+	//@Autowired
 	private PagamentoDao pagamentos;
+
+	@Autowired
+	public GeradorDePagamento(PagamentoDao pagamentos) {
+		this.pagamentos = pagamentos;
+	}
 
 	public void gerarPagamento(Lance lanceVencedor) {
 		LocalDate vencimento = LocalDate.now().plusDays(1);
